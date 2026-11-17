@@ -20,4 +20,4 @@ docker build -t postgres-check .
 ./test-image postgres-check
 ```
 
-The smoke test starts a disposable database, creates the vector extension, runs a vector query, and checks PostgreSQL's backup tools and pgBackRest. Pull requests run it on AMD64 and ARM64. Pushing a `postgres-v*` tag builds and checks both architectures, then publishes a multi-platform image to GHCR.
+The smoke test starts a temporary database, creates the vector extension, runs a vector query, and checks PostgreSQL's backup tools and pgBackRest. Pull requests run it on AMD64 and ARM64. Pushing a `postgres-v*` tag builds and checks both architectures, then publishes a multi-platform image to GHCR.
