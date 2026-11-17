@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+image=${1:?Usage: postgres/test-image IMAGE}
+name="postgres-image-smoke-$$"
+
+cleanup() {
+  docker rm -fv "$name" >/dev/null 2>&1 || true
+}
+trap cleanup EXIT
+
+docker run -d --name "$name" -e POSTGRES_PASSWORD=smoke "$image" >/dev/null
+
+# The entrypoint's temporary init server listens only on the Unix socket, so TCP waits for the final server.
+for _ in {1..30}; do
+  if docker exec "$name" pg_isready -h 127.0.0.1 -U postgres >/dev/null 2>&1; then
+    break
+  fi
+  sleep 1
+done
+
+docker exec "$name" pg_isready -h 127.0.0.1 -U postgres
+docker exec "$name" psql -U postgres -v ON_ERROR_STOP=1 -c 'CREATE EXTENSION vector'
+docker exec "$name" psql -U postgres -v ON_ERROR_STOP=1 -c "SELECT '[1,2,3]'::vector <-> '[4,5,6]'::vector"
+docker exec --user postgres "$name" pgbackrest version
+docker exec "$name" pg_basebackup --version
+docker exec "$name" pg_verifybackup --version
