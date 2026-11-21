@@ -5,5 +5,6 @@ FROM pgvector/pgvector:pg18@sha256:2358fcba361ed2233a5ed81b5fe4ca779ccb304120ce5
 
 RUN apt-get update -qq && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+      ca-certificates=20250419~deb12u2 \
       pgbackrest=2.60.0-1.pgdg12+1 && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*

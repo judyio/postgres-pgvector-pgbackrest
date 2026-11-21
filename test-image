@@ -25,3 +25,16 @@ docker exec "$name" psql -U postgres -v ON_ERROR_STOP=1 -c "SELECT '[1,2,3]'::ve
 docker exec --user postgres "$name" pgbackrest version
 docker exec "$name" pg_basebackup --version
 docker exec "$name" pg_verifybackup --version
+
+# pgBackRest verifies TLS by default. An HTTP error proves the handshake verified; [095] means no trusted CA bundle.
+r2_reply=$(docker exec --user postgres \
+  -e PGBACKREST_REPO1_S3_KEY=smoke -e PGBACKREST_REPO1_S3_KEY_SECRET=smoke "$name" \
+  pgbackrest --repo1-type=s3 --repo1-s3-endpoint=pub-00000000000000000000000000000000.r2.dev \
+  --repo1-s3-uri-style=path --repo1-s3-bucket=smoke --repo1-s3-region=auto --repo1-path=/smoke \
+  --io-timeout=10 --log-level-console=warn repo-ls 2>&1 || true)
+if ! grep -q 'ERROR: \[039\]: HTTP request failed' <<<"$r2_reply"; then
+  echo "pgBackRest could not reach R2 over verified TLS:" >&2
+  echo "$r2_reply" >&2
+  exit 1
+fi
+echo "pgBackRest reached R2 over verified TLS"

@@ -1,6 +1,6 @@
 # PostgreSQL 18 with pgvector and pgBackRest
 
-A PostgreSQL container image with the [pgvector](https://github.com/pgvector/pgvector) extension and [pgBackRest](https://pgbackrest.org/) backup tool. It extends `pgvector/pgvector:pg18` pinned to `sha256:2358fcba361ed2233a5ed81b5fe4ca779ccb304120ce531a3bf51c0ed7e2bc11` and installs pgBackRest `2.60.0-1.pgdg12+1`. The upstream entrypoint and PostgreSQL 18 data directory (`/var/lib/postgresql/18/docker`) are retained.
+A PostgreSQL container image with the [pgvector](https://github.com/pgvector/pgvector) extension and [pgBackRest](https://pgbackrest.org/) backup tool. It extends `pgvector/pgvector:pg18` pinned to `sha256:2358fcba361ed2233a5ed81b5fe4ca779ccb304120ce531a3bf51c0ed7e2bc11` and installs pgBackRest `2.60.0-1.pgdg12+1` and Debian's `ca-certificates` trust bundle, so pgBackRest can verify the TLS certificates of S3-compatible storage such as Cloudflare R2. The upstream entrypoint and PostgreSQL 18 data directory (`/var/lib/postgresql/18/docker`) are retained.
 
 ## Pull and run
 
@@ -20,4 +20,4 @@ docker build -t postgres-check .
 ./test-image postgres-check
 ```
 
-The smoke test starts a disposable database, creates the vector extension, runs a vector query, and checks PostgreSQL's backup tools and pgBackRest. Pull requests run it on AMD64 and ARM64. Pushing a `postgres-v*` tag builds and checks both architectures, then publishes a multi-platform image to GHCR.
+The smoke test starts a disposable database, creates the vector extension, runs a vector query, and checks PostgreSQL's backup tools and pgBackRest. It also connects pgBackRest to a public Cloudflare R2 host with TLS verification on, so the check needs internet access. Pull requests run it on AMD64 and ARM64. Pushing a `postgres-v*` tag builds and checks both architectures, then publishes a multi-platform image to GHCR.
